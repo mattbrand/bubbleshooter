@@ -6,7 +6,7 @@ import src.soundcontroller as soundcontroller;
 var shooterImg = new Image({url: "resources/images/spaceship.png"});
 var shooterSize = 40;
 var startX = 140;
-var startY = 475;
+var startY = 435;
 
 exports = Class(ui.View, function (supr) {
 	this.init = function (opts) {

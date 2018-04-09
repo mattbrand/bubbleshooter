@@ -4,7 +4,7 @@ import ui.resource.Image as Image;
 
 var SHOT_SIZE = 40;
 var START_X = 140;
-var START_Y = 500;
+var START_Y = 460;
 var SHOT_SPEED = 7.5;
 
 var bubbleImg = new Image({url: "resources/images/bubble.png"});

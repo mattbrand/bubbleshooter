@@ -38,7 +38,7 @@ exports = Class(ui.View, function (supr) {
 		if (useYOffset) {
 			xPos += BUBBLE_SIZE / 2;
 		}
-		var yPos = (j * (BUBBLE_SIZE * 0.85));
+		var yPos = j * (BUBBLE_SIZE * 0.85);
 		this.style.x = xPos;
 		this.style.y = yPos;
 	};

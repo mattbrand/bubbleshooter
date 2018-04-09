@@ -11,11 +11,12 @@ import src.NextView as NextView;
 var MIN_CLUSTER_SIZE = 3;
 var BLANK_BUBBLE = -1;
 var NO_BUBBLE = -2;
-var GRID_ROWS = 13;
+var GRID_ROWS = 12;
 var GRID_COLUMNS = 8;
 var START_ROWS = 5;
 var BUBBLE_SIZE = 40;
 var CLUSTER_FALL_Y = 80;
+var CLUSTER_POINTS = 5;
 var DEBUG = false;
 
 var score = 0;
@@ -78,7 +79,7 @@ exports = Class(ui.View, function (supr) {
 		this._scoreBoard = new ui.TextView({
 			superview: this,
 			x: 0,
-			y: 0,
+			y: 485,
 			width: 320,
 			height: BUBBLE_SIZE,
 			autoSize: false,
@@ -233,14 +234,6 @@ exports = Class(ui.View, function (supr) {
 			if (odd && (i == (GRID_COLUMNS - 1)))
 				i -= 1;
 	    return { col: i, row: j };
-		}
-
-		this.getGridCoordinate = function(col, row) {
-	    var x = col * tilewidth;
-			if (this.isOddRow(row))
-				x += BUBBLE_SIZE / 2;
-	    var y = (row * (BUBBLE_SIZE * 0.85));
-	    return [x,y];
 		}
 
 		this.findNeighbors = function(gridPos) {
@@ -479,6 +472,11 @@ exports = Class(ui.View, function (supr) {
 			return false;
 		};
 
+		this.addToScore = function(points) {
+			score += points;
+			this._scoreBoard.setText("SCORE: " + score);
+		};
+
 		this.displayGridDebug = function() {
 			for (var j=0; j<this._grid[0].length; j++) {
 				var rowStr = "";
@@ -531,6 +529,8 @@ function startGameFlow() {
 				// check for a cluster to remove
 				var cluster = this.findCluster(this._newGridPos, true, true, false);
 				if (cluster.length >= MIN_CLUSTER_SIZE) {
+					//add to score
+					this.addToScore(cluster.length * CLUSTER_POINTS);
 					if (DEBUG)
 						console.log("found cluster:");
 					for (var i=0; i<cluster.length; i++) {
@@ -550,6 +550,8 @@ function startGameFlow() {
 								floatingClusters[i][j].type = -1;
 								this._floatingBubbles.push(floatingClusters[i][j].bubble);
 								floatingClusters[i][j].bubble = null;
+								// add to score
+								this.addToScore(1);
 							}
 						}
 						clusterFallY = 0;
@@ -606,9 +608,6 @@ function update_countdown() {
  * screen so we may play again.
  */
 function endGameFlow() {
-	var isHighScore = (score > high_score),
-			end_msg = get_end_message(score, isHighScore);
-
 	// this._countdown.setText(''); //clear countdown text
 	//resize scoreboard text to fit everything
 	this._scoreBoard.updateOpts({
@@ -652,7 +651,7 @@ function emitEndEvent() {
 
 /* Reset game counters and assets.
  */
-function reset_game () {
+function resetGame() {
 	score = 0;
 	countdown_secs = game_length / 1000;
 	this._scoreBoard.setText('');
@@ -673,53 +672,6 @@ function reset_game () {
 		color: '#fff'
 	});
 }
-
-/*
- * Strings
- */
-
-function get_end_message (score, isHighScore) {
-	var moles = (score === 1) ? text.MOLE : text.MOLES,
-			end_msg = text.END_MSG_START + ' ' + score + ' ' + moles + '.\n';
-
-	if (isHighScore) {
-		end_msg += text.HIGH_SCORE + '\n';
-	} else {
-		//random taunt
-		var i = (Math.random() * text.taunts.length) | 0;
-		end_msg += text.taunts[i] + '\n';
-	}
-	return (end_msg += text.END_MSG_END);
-}
-
-var localized_strings = {
-	en: {
-		READY: "Ready ...",
-		SET: "Set ...",
-		GO: "Whack that Mole!",
-		MOLE: "mole",
-		MOLES: "moles",
-		END_MSG_START: "You whacked",
-		END_MSG_END: "Tap to play again",
-		HIGH_SCORE: "That's a new high score!"
-	}
-};
-
-localized_strings['en'].taunts = [
-	"Welcome to Loserville, population: you.", //max length
-	"You're an embarrassment!",
-	"You'll never catch me!",
-	"Your days are numbered, human.",
-	"Don't quit your day job.",
-	"Just press the screen, it's not hard.",
-	"You might be the worst I've seen.",
-	"You're just wasting my time.",
-	"Don't hate the playa, hate the game.",
-	"Make like a tree, and get out of here!"
-];
-
-//object of strings used in game
-var text = localized_strings[lang.toLowerCase()];
 
 // utilities
 function getRandomInt(min, max) {
