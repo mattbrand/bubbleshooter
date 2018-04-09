@@ -15,7 +15,7 @@ var GRID_ROWS = 13;
 var GRID_COLUMNS = 8;
 var START_ROWS = 5;
 var BUBBLE_SIZE = 40;
-var DEBUG = false;
+var DEBUG = true;
 
 var score = 0;
 var high_score = 19;
@@ -45,6 +45,7 @@ exports = Class(ui.View, function (supr) {
 
 		// console.log(this.findMatchBubbles(0, 0));
 
+		this.findNeighbors(this._grid[2][5]);
 		// console.log(this.findNeighbors(7, 0));
 		// this.shiftGrid();
 		// this.testBuild();
@@ -210,7 +211,7 @@ exports = Class(ui.View, function (supr) {
 		};
 
 		this.inOddRow = function(row) {
-			if (row < START_ROWS) {
+			if (row < GRID_ROWS) {
 				if (this._grid[GRID_COLUMNS - 1][row].type == NO_BUBBLE)
 					return true;
 			}
@@ -307,48 +308,48 @@ exports = Class(ui.View, function (supr) {
 		};
 
 		this.findCluster = function(gridPos, matchType, reset, skipRemoved) {
-			if (reset) {
-		    // reset the processed flags
+			if (reset)
 		    this.resetChecked();
-			}
 
-	    // Initialize the toprocess array with the specified tile
+	    // initialize the toprocess array with the specified tile
 	    var toProcess = [gridPos];
 	    gridPos.checked = true;
 	    var foundCluster = [];
 
 	    while (toProcess.length > 0) {
-        // Pop the last element from the array
+        // pop the last element from the array
         var currentGridPos = toProcess.pop();
 
-        // Skip processed and empty tiles
-        if (currentGridPos.type == -1 || currentGridPos.type == -2) {
-            continue;
-        }
+        // skip processed and empty tiles
+        if (currentGridPos.type == -1 || currentGridPos.type == -2)
+          continue;
 
 				if (skipRemoved && currentGridPos.removed)
 					continue;
 
-        // Check if current tile has the right type, if matchtype is true
+        // check if current tile has the right type, if matchtype is true
         if (!matchType || currentGridPos.type == gridPos.type) {
-          // Add current tile to the cluster
+          // add current tile to the cluster
           foundCluster.push(currentGridPos);
 
-          // Get the neighbors of the current tile
+					if (DEBUG)
+						console.log("added " + currentGridPos.i + ", " + currentGridPos.j + " --- " + currentGridPos.type + " to cluster");
+
+          // get the neighbors of the current tile
           var neighbors = this.findNeighbors(currentGridPos);
 
-          // Check the type of each neighbor
+          // check the type of each neighbor
           for (var i=0; i<neighbors.length; i++) {
             if (!neighbors[i].checked) {
-                // Add the neighbor to the toprocess array
-                toProcess.push(neighbors[i]);
-                neighbors[i].checked = true;
+              // add the neighbor to the toprocess array
+              toProcess.push(neighbors[i]);
+              neighbors[i].checked = true;
             }
           }
         }
 	    }
 
-    	// Return the found cluster
+    	// return the found cluster
     	return foundCluster;
 		};
 
@@ -450,7 +451,6 @@ exports = Class(ui.View, function (supr) {
 				gridPos.setTypeAndPosition(i, 0, type, !fullRow);
 				newRow.push(gridPos);
 				this.addBubble(gridPos);
-				// this.addBubble(i, 0, gridPos.style.x, gridPos.style.y, gridPos.type);
 			}
 
 			var shiftedGrid = new Array();
@@ -465,7 +465,8 @@ exports = Class(ui.View, function (supr) {
 			}
 			this._grid = shiftedGrid;
 
-			// console.log(this.findNeighbors(0, 0));
+			if (DEBUG)
+				console.log("shifted grid");
 		};
 
 		this.checkForBubblesInLastRow = function() {
