@@ -54,4 +54,8 @@ exports = Class(ui.View, function (supr) {
   this.shiftDown = function() {
     this._bubbleImg.style.y += BUBBLE_SIZE * 0.85
   };
+
+	this.moveY = function(yDiff) {
+		this._bubbleImg.style.y += yDiff;
+	};
 });

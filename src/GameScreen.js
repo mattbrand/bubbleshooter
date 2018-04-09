@@ -15,7 +15,8 @@ var GRID_ROWS = 13;
 var GRID_COLUMNS = 8;
 var START_ROWS = 5;
 var BUBBLE_SIZE = 40;
-var DEBUG = true;
+var CLUSTER_FALL_Y = 80;
+var DEBUG = false;
 
 var score = 0;
 var high_score = 19;
@@ -27,6 +28,7 @@ var countdown_secs = game_length / 1000;
 var lang = 'en';
 var gameState = 0; // 0 == aiming, 1 = shooting, 2 = finding matches, 3 = falling bubbles, 4 = shifting
 var shotCount = 0;
+var clusterFallY = 0;
 
 exports = Class(ui.View, function (supr) {
 	this.init = function (opts) {
@@ -538,7 +540,23 @@ function startGameFlow() {
 						cluster[i].bubble.removeFromSuperview();
 						cluster[i].bubble = null;
 					}
-					gameState = 3;
+
+					// find floating bubbles
+					var floatingClusters = this.findFloatingClusters();
+					if (floatingClusters.length > 0) {
+						this._floatingBubbles = [];
+						for (var i=0; i<floatingClusters.length; i++) {
+							for (var j=0; j<floatingClusters[i].length; j++) {
+								floatingClusters[i][j].type = -1;
+								this._floatingBubbles.push(floatingClusters[i][j].bubble);
+								floatingClusters[i][j].bubble = null;
+							}
+						}
+						clusterFallY = 0;
+						gameState = 3;
+					}
+					else
+						gameState = 4;
 				}
 				else {
 					gameState = 4;
@@ -546,11 +564,20 @@ function startGameFlow() {
 				break;
 			case 3:
 				// check for floating bubbles
-				var clusters = this.findFloatingClusters();
-				if (clusters.length > 0) {
-					console.log("found " + clusters.length + " cluster(s)");
+				if (this._floatingBubbles.length > 0 && clusterFallY < CLUSTER_FALL_Y) {
+					for (var i=0; i<this._floatingBubbles.length; i++) {
+						this._floatingBubbles[i].moveY(BUBBLE_SIZE / 8);
+					}
+					clusterFallY += BUBBLE_SIZE / 8;
+
+					if (clusterFallY >= CLUSTER_FALL_Y) {
+						for (var i=0; i<this._floatingBubbles.length; i++) {
+							this._floatingBubbles[i]._bubbleImg.removeFromSuperview();
+						}
+						this._floatingBubbles = [];
+						gameState++;
+					}
 				}
-				gameState++;
 				break;
 			case 4:
 				// check if a new row is to be added to the grid
