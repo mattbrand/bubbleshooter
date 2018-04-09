@@ -15,6 +15,7 @@ var GRID_ROWS = 13;
 var GRID_COLUMNS = 8;
 var START_ROWS = 5;
 var BUBBLE_SIZE = 40;
+var DEBUG = false;
 
 var score = 0;
 var high_score = 19;
@@ -273,9 +274,11 @@ exports = Class(ui.View, function (supr) {
 				if ((row < (this._grid.length - 1)) && this._grid[col][row+1].type != NO_BUBBLE)
 					neighbors.push(this._grid[col][row+1]);
 			}
-			console.log("returning neighbors:");
-			for (var i=0; i<neighbors.length; i++)
-				console.log(neighbors[i].i + ", " + neighbors[i].j + " --- " + neighbors[i].type);
+			if (DEBUG) {
+				console.log("returning neighbors:");
+				for (var i=0; i<neighbors.length; i++)
+					console.log(neighbors[i].i + ", " + neighbors[i].j + " --- " + neighbors[i].type);
+			}
 			return neighbors;
 		};
 
@@ -285,27 +288,28 @@ exports = Class(ui.View, function (supr) {
 				if (gridPositions[i].type == BLANK_BUBBLE)
 					openNeighbors.push(gridPositions[i]);
 			}
-			console.log("found open neighbors:");
-			for (var i=0; i<openNeighbors.length; i++)
-				console.log(openNeighbors[i].i + ", " + openNeighbors[i].j + " --- " + openNeighbors[i].type);
+			if (DEBUG) {
+				console.log("found open neighbors:");
+				for (var i=0; i<openNeighbors.length; i++)
+					console.log(openNeighbors[i].i + ", " + openNeighbors[i].j + " --- " + openNeighbors[i].type);
+			}
 			return openNeighbors;
 		};
 
 		this.findNearestOpenNeighbor = function(gridPos) {
 			var openNeighbors = this.findOpenNeighbors(this.findNeighbors(gridPos));
 			if (openNeighbors.length > 0) {
-				console.log("found nearest open neighbor at " + openNeighbors[0].i + ", " + openNeighbors[0].j + " --- " + openNeighbors[0].type);
+				if (DEBUG)
+					console.log("found nearest open neighbor at " + openNeighbors[0].i + ", " + openNeighbors[0].j + " --- " + openNeighbors[0].type);
 				return openNeighbors[0];
 			}
 			return gridPos;
 		};
 
-		this.findCluster = function(gridPos) {
-	    // Reset the processed flags
-	    for (var i=0; i<this._grid.length; i++) {
-				for (var j=0; j<this._grid[i].length; j++) {
-					this._grid[i][j].checked = false;
-				}
+		this.findCluster = function(gridPos, matchType, reset, skipRemoved) {
+			if (reset) {
+		    // reset the processed flags
+		    this.resetChecked();
 			}
 
 	    // Initialize the toprocess array with the specified tile
@@ -322,8 +326,11 @@ exports = Class(ui.View, function (supr) {
             continue;
         }
 
+				if (skipRemoved && currentGridPos.removed)
+					continue;
+
         // Check if current tile has the right type, if matchtype is true
-        if (currentGridPos.type == gridPos.type) {
+        if (!matchType || currentGridPos.type == gridPos.type) {
           // Add current tile to the cluster
           foundCluster.push(currentGridPos);
 
@@ -345,6 +352,53 @@ exports = Class(ui.View, function (supr) {
     	return foundCluster;
 		};
 
+		this.resetChecked = function() {
+			for (var i=0; i<this._grid.length; i++) {
+				for (var j=0; j<this._grid[i].length; j++) {
+					this._grid[i][j].checked = false;
+				}
+			}
+		};
+
+		this.findFloatingClusters = function() {
+    	this.resetChecked();
+
+    	var foundclusters = [];
+
+	    // check all tiles
+	    for (var i=0; i<this._grid.length; i++) {
+        for (var j=0; j<this._grid[0].length; j++) {
+          var gridPos = this._grid[i][j];
+          if (!gridPos.checked) {
+            // Find all attached tiles
+            var foundcluster = this.findCluster(gridPos, false, false, true);
+
+            // There must be a tile in the cluster
+            if (foundcluster.length <= 0) {
+              continue;
+            }
+
+            // Check if the cluster is floating
+            var floating = true;
+            for (var k=0; k<foundcluster.length; k++) {
+              if (foundcluster[k].style.y == 0) {
+                // Tile is attached to the roof
+                floating = false;
+                break;
+              }
+            }
+
+            if (floating) {
+                // Found a floating cluster
+                foundclusters.push(foundcluster);
+            }
+          }
+        }
+	    }
+
+		  return foundclusters;
+		};
+
 		this.snapShotToGrid = function() {
 			var gridColRow = this.getGridPosition(this._shot._shotImg.style.x + (BUBBLE_SIZE / 2), this._shot._shotImg.style.y + (BUBBLE_SIZE / 2));
 			if (gridColRow.col < 0)
@@ -361,14 +415,16 @@ exports = Class(ui.View, function (supr) {
 			if (this._newGridPos.type != BLANK_BUBBLE)
 				this._newGridPos = this.findNearestOpenNeighbor(this._newGridPos);
 			if (this._newGridPos != null) {
-				console.log("shot hit at " + this._newGridPos.i + ", " + this._newGridPos.j);
+				if (DEBUG)
+					console.log("shot hit at " + this._newGridPos.i + ", " + this._newGridPos.j);
 				// this._newGridPos = this._grid[gridColRow.col][gridColRow.row];
 				this._newGridPos.setType(this._shot.type);
 				this.addBubble(this._newGridPos);
 				gameState = 2;
 			}
 			else {
-				console.log("did not find a place for shot to hit");
+				if (DEBUG)
+					console.log("did not find a place for shot to hit");
 				gameState = 0;
 			}
 			this._shot.removeFromSuperview();
@@ -440,6 +496,7 @@ function startGameFlow() {
 	GC.app.engine.on('Tick', bind(this, function() {
 		switch (gameState) {
 			case 1:
+				// check for where the shot hit
 				if (this._shot != null) {
 					this._shot.move(this._shotX, this._shotY, this._shot);
 					if (this._shot._shotImg.style.x > (320 - BUBBLE_SIZE) && this._shotX < 0) {
@@ -468,11 +525,14 @@ function startGameFlow() {
 				}
 				break;
 			case 2:
-				var cluster = this.findCluster(this._newGridPos);
+				// check for a cluster to remove
+				var cluster = this.findCluster(this._newGridPos, true, true, false);
 				if (cluster.length >= MIN_CLUSTER_SIZE) {
-					console.log("found cluster:");
+					if (DEBUG)
+						console.log("found cluster:");
 					for (var i=0; i<cluster.length; i++) {
-						console.log(cluster[i].i + ", " + cluster[i].j + " --- " + cluster[i].type);
+						if (DEBUG)
+							console.log(cluster[i].i + ", " + cluster[i].j + " --- " + cluster[i].type);
 						cluster[i].type = -1;
 						cluster[i].bubble.removeFromSuperview();
 						cluster[i].bubble = null;
@@ -484,9 +544,15 @@ function startGameFlow() {
 				}
 				break;
 			case 3:
+				// check for floating bubbles
+				var clusters = this.findFloatingClusters();
+				if (clusters.length > 0) {
+					console.log("found " + clusters.length + " cluster(s)");
+				}
 				gameState++;
 				break;
 			case 4:
+				// check if a new row is to be added to the grid
 				if (shotCount % 5 == 0) {
 					this.shiftGrid();
 					if (this.checkForBubblesInLastRow()) {
@@ -494,7 +560,8 @@ function startGameFlow() {
 						endGameFlow();
 					}
 				}
-				this.displayGridDebug();
+				if (DEBUG)
+					this.displayGridDebug();
 				gameState = 0;
 				break;
 		}
