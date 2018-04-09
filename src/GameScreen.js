@@ -403,7 +403,7 @@ exports = Class(ui.View, function (supr) {
 		};
 
 		this.snapShotToGrid = function() {
-			var gridColRow = this.getGridPosition(this._shot._shotImg.style.x + (BUBBLE_SIZE / 2), this._shot._shotImg.style.y + (BUBBLE_SIZE / 2));
+			var gridColRow = this.getGridPosition(this._shot._shotImg.style.x, this._shot._shotImg.style.y);
 			if (gridColRow.col < 0)
       	gridColRow.col  = 0;
       if (gridColRow.col >= GRID_COLUMNS)
