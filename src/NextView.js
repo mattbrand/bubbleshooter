@@ -123,4 +123,11 @@ exports = Class(ui.View, function (supr) {
 		});
     this.addSubview(this._nextBubbleImg);
   };
+
+  this.displayGameOver = function() {
+    this._currentPanel.setText("Game ");
+    this._nextPanel.setText("Over!");
+    this._currentBubbleImg.removeFromSuperview();
+    this._nextBubbleImg.removeFromSuperview();
+  };
 });

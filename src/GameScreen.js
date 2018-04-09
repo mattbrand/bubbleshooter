@@ -11,9 +11,9 @@ import src.NextView as NextView;
 var MIN_CLUSTER_SIZE = 3;
 var BLANK_BUBBLE = -1;
 var NO_BUBBLE = -2;
-var GRID_ROWS = 12;
+var GRID_ROWS = 13;
 var GRID_COLUMNS = 8;
-var START_ROWS = 5;
+var START_ROWS = 12;
 var BUBBLE_SIZE = 40;
 var CLUSTER_FALL_Y = 80;
 var CLUSTER_POINTS = 5;
@@ -72,6 +72,36 @@ exports = Class(ui.View, function (supr) {
 		this._bubbles.push(bubble);
 	};
 
+	this.buildGrid = function() {
+		for (var i=0; i<GRID_COLUMNS; i++) {
+			var arrayRow = [];
+			for (var j=0; j<GRID_ROWS; j++) {
+				var gridPos = new GridPos();
+				var type = getRandomInt(0, 3);
+				var useYOffset = false;
+				if (j % 2 == 1)
+					useYOffset = true;
+				if (j % 2 == 1 && (i == (GRID_COLUMNS - 1)))
+					type = NO_BUBBLE;
+				else if (j >= START_ROWS)
+					type = BLANK_BUBBLE;
+				gridPos.setTypeAndPosition(i, j, type, useYOffset);
+				this.addSubview(gridPos);
+				arrayRow.push(gridPos);
+			}
+			this._grid.push(arrayRow);
+		}
+
+		this._bubbles = new Array();
+		for (var i=0; i<GRID_COLUMNS; i++) {
+			for (var j=0; j<GRID_ROWS; j++) {
+				if (this._grid[i][j].type >= 0) {
+					this.addBubble(this._grid[i][j]);
+				}
+			}
+		}
+	};
+
 	this.build = function() {
 
 		this.on('app:start', startGameFlow.bind(this));
@@ -104,34 +134,7 @@ exports = Class(ui.View, function (supr) {
 		this.style.height = 480;
 		this._grid = new Array();
 
-		for (var i=0; i<GRID_COLUMNS; i++) {
-			var arrayRow = [];
-			for (var j=0; j<GRID_ROWS; j++) {
-				var gridPos = new GridPos();
-				var type = getRandomInt(0, 3);
-				var useYOffset = false;
-				if (j % 2 == 1)
-					useYOffset = true;
-				if (j % 2 == 1 && (i == (GRID_COLUMNS - 1)))
-					type = NO_BUBBLE;
-				else if (j >= START_ROWS)
-					type = BLANK_BUBBLE;
-				gridPos.setTypeAndPosition(i, j, type, useYOffset);
-				this.addSubview(gridPos);
-				arrayRow.push(gridPos);
-			}
-			this._grid.push(arrayRow);
-		}
-
-		this._bubbles = new Array();
-		for (var i=0; i<GRID_COLUMNS; i++) {
-			for (var j=0; j<GRID_ROWS; j++) {
-				if (this._grid[i][j].type >= 0) {
-					this.addBubble(this._grid[i][j]);
-					// this.addBubble(i, j, this._grid[i][j].style.x, this._grid[i][j].style.y, this._grid[i][j].type);
-				}
-			}
-		}
+		this.buildGrid();
 		/*
 		for (var i=0; i<GRID_COLUMNS; i++) {
 			for (var j=0; j<startRows; j++) {
@@ -494,6 +497,7 @@ exports = Class(ui.View, function (supr) {
 function startGameFlow() {
 	game_on = true;
 
+	// update to handle gameplay
 	GC.app.engine.on('Tick', bind(this, function() {
 		switch (gameState) {
 			case 1:
@@ -537,7 +541,8 @@ function startGameFlow() {
 						if (DEBUG)
 							console.log(cluster[i].i + ", " + cluster[i].j + " --- " + cluster[i].type);
 						cluster[i].type = -1;
-						cluster[i].bubble.removeFromSuperview();
+						cluster[i].deleteBubble();
+						// cluster[i].bubble.removeFromSuperview();
 						cluster[i].bubble = null;
 					}
 
@@ -565,7 +570,7 @@ function startGameFlow() {
 				}
 				break;
 			case 3:
-				// check for floating bubbles
+				// handle floating bubbles
 				if (this._floatingBubbles.length > 0 && clusterFallY < CLUSTER_FALL_Y) {
 					for (var i=0; i<this._floatingBubbles.length; i++) {
 						this._floatingBubbles[i].moveY(BUBBLE_SIZE / 8);
@@ -585,81 +590,64 @@ function startGameFlow() {
 				// check if a new row is to be added to the grid
 				if (shotCount % 5 == 0) {
 					this.shiftGrid();
-					if (this.checkForBubblesInLastRow()) {
-						gameState = 5;
-						endGameFlow();
-					}
+
 				}
 				if (DEBUG)
 					this.displayGridDebug();
-				gameState = 0;
+
+				// end game state
+				if (this.checkForBubblesInLastRow()) {
+					gameState = 5;
+					endGameFlow.call(this);
+				}
+				// or start new turn
+				else {
+					gameState = 0;
+				}
 				break;
 		}
 	}));
 }
 
-function update_countdown() {
-	countdown_secs -= 1;
-	this._countdown.setText(":" + (("00" + countdown_secs).slice(-2)));
-}
-
-/* Check for high-score and play the ending animation.
- * Add a click-handler to the screen to return to the title
- * screen so we may play again.
- */
 function endGameFlow() {
-	// this._countdown.setText(''); //clear countdown text
-	//resize scoreboard text to fit everything
-	this._scoreBoard.updateOpts({
-		text: '',
-		x: 10,
-		fontSize: 17,
-		verticalAlign: 'top',
-		textAlign: 'left',
-		wrap: true
-	});
-
-	//check for high-score and do appropriate animation
-	if (isHighScore) {
-		high_score = score;
-		/*
-		this._molehills.forEach(function (molehill) {
-			molehill.endAnimation();
-		});
-		*/
-	} else {
-		/*
-		var i = (this._molehills.length-1) / 2 | 0; //just center mole
-		this._molehills[i].endAnimation(true);
-		*/
-	}
-
-	this._scoreBoard.setText(end_msg);
-
-	//slight delay before allowing a tap reset
+	this._scoreBoard.setText("Score: " + score);
+	this._nextView.displayGameOver();
 	setTimeout(emitEndEvent.bind(this), 2000);
 }
 
 /* Tell the main app to switch back to the title screen.
  */
 function emitEndEvent() {
-	this.once("InputSelect", function () {
-		this.emit("gamescreen:end");
-		reset_game.call(this);
-	});
+	this.emit("gamescreen:end");
+	resetGame.call(this);
 }
 
 /* Reset game counters and assets.
  */
 function resetGame() {
 	score = 0;
+	gameState = 0;
+	// remove old grid
+	for (var i=0; i<GRID_COLUMNS; i++) {
+		for (var j=0; j<GRID_ROWS; j++) {
+			this._grid[i][j].deleteBubble();
+			this._grid[i][j].removeFromSuperview();
+		}
+	}
+
+	if (this._shot != null) {
+		this._shot.removeFromSuperview();
+		this._shot = null;
+	}
+
+	this.buildGrid();
+	/*
 	countdown_secs = game_length / 1000;
 	this._scoreBoard.setText('');
 	/*
 	this._molehills.forEach(function (molehill) {
 		molehill.resetMole();
 	});
-	*/
 	this._scoreBoard.updateOpts({
 		x: 0,
 		fontSize: 38,
@@ -671,6 +659,7 @@ function resetGame() {
 		visible: false,
 		color: '#fff'
 	});
+	*/
 }
 
 // utilities

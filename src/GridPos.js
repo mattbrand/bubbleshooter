@@ -21,6 +21,13 @@ exports = Class(ui.View, function (supr) {
 		this.bubble = bubble;
 	};
 
+	this.deleteBubble = function() {
+		if (this.bubble != null) {
+			this.bubble.removeFromSuperview();
+			this.bubble = null;
+		}
+	};
+
 	this.shiftDown = function() {
 		this.style.y += (BUBBLE_SIZE * 0.85);
 		if (this.bubble != null)
