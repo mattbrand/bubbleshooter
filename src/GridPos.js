@@ -14,32 +14,32 @@ exports = Class(ui.View, function (supr) {
 	};
 
 	this.setType = function(type) {
-		this.type = type;
+		this._type = type;
 	};
 
 	this.setBubble = function(bubble) {
-		this.bubble = bubble;
+		this._bubble = bubble;
 	};
 
 	this.deleteBubble = function() {
-		if (this.bubble != null) {
-			this.bubble.removeFromSuperview();
-			this.bubble = null;
+		if (this._bubble != null) {
+			this._bubble.removeFromSuperview();
+			this._bubble = null;
 		}
 	};
 
 	this.shiftDown = function() {
 		this.style.y += (BUBBLE_SIZE * 0.85);
-		if (this.bubble != null)
-			this.bubble.shiftDown();
+		if (this._bubble != null)
+			this._bubble.shiftDown();
 	};
 
 	this.setTypeAndPosition = function(i, j, type, useYOffset) {
-		this.i = i;
-		this.j = j;
-		this.type = type;
-		this.checked = false;
-		this.removed = false;
+		this._i = i;
+		this._j = j;
+		this._type = type;
+		this._checked = false;
+		this._removed = false;
 
 		var xPos = i * BUBBLE_SIZE;
 		if (useYOffset) {

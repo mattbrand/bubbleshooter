@@ -127,7 +127,14 @@ exports = Class(ui.View, function (supr) {
   this.displayGameOver = function() {
     this._currentPanel.setText("Game ");
     this._nextPanel.setText("Over!");
-    this._currentBubbleImg.removeFromSuperview();
-    this._nextBubbleImg.removeFromSuperview();
+    this._currentBubbleImg.style.opacity = 0;
+    this._nextBubbleImg.style.opacity = 0;
+  };
+
+  this.reset = function() {
+    this._currentPanel.setText("Curr:");
+    this._nextPanel.setText("Next:");
+    this._currentBubbleImg.style.opacity = 1;
+    this._nextBubbleImg.style.opacity = 1;
   };
 });

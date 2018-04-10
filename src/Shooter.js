@@ -3,16 +3,19 @@ import ui.ImageView;
 import ui.resource.Image as Image;
 import src.soundcontroller as soundcontroller;
 
+var SHOOTER_SIZE = 40;
+var START_X = 140;
+var START_Y = 435;
+var MIN_ANGLE = 300;
+var MAX_ANGLE = 60;
+
 var shooterImg = new Image({url: "resources/images/spaceship.png"});
-var shooterSize = 40;
-var startX = 140;
-var startY = 435;
 
 exports = Class(ui.View, function (supr) {
 	this.init = function (opts) {
 		opts = merge(opts, {
-			width:	shooterSize,
-			height: shooterSize
+			width:	SHOOTER_SIZE,
+			height: SHOOTER_SIZE
 		});
 
 		supr(this, 'init', [opts]);
@@ -25,18 +28,18 @@ exports = Class(ui.View, function (supr) {
 		this._shooterImg = new ui.ImageView({
 			superview: this,
 			image: shooterImg,
-			x: startX,
-			y: startY,
-			width: shooterSize,
-			height: shooterSize,
-			anchorX: shooterSize / 2,
-			anchorY: shooterSize / 2
+			x: START_X,
+			y: START_Y,
+			width: SHOOTER_SIZE,
+			height: SHOOTER_SIZE,
+			anchorX: SHOOTER_SIZE / 2,
+			anchorY: SHOOTER_SIZE / 2
 		});
   };
 
 	this.setAngle = function(pt) {
-		var xDiff = (startX + (shooterSize / 2)) - pt.x;
-		var yDiff = startY - pt.y;
+		var xDiff = (START_X + (SHOOTER_SIZE / 2)) - pt.x;
+		var yDiff = START_Y - pt.y;
 		var angle = Math.atan2(yDiff, xDiff);
 
 		var degAngle = radToDeg(angle);
@@ -44,6 +47,10 @@ exports = Class(ui.View, function (supr) {
 		if (degAngle < 0) {
     	degAngle += 360;
     }
+		if (degAngle > MAX_ANGLE && degAngle < 180)
+			degAngle = MAX_ANGLE;
+		if (degAngle < MIN_ANGLE && degAngle >= 180)
+			degAngle = MIN_ANGLE;
 		this._shooterImg.style.r = degToRad(degAngle);
 		this._angle = angle;
 

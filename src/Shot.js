@@ -25,7 +25,7 @@ exports = Class(ui.View, function (supr) {
   this._shotImg = null;
 
 	this.launch = function(x, y, type, shot) {
-    this.type = type;
+    this._type = type;
     var image = null;
     switch (type) {
 			case 0:

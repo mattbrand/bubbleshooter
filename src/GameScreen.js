@@ -13,7 +13,7 @@ var BLANK_BUBBLE = -1;
 var NO_BUBBLE = -2;
 var GRID_ROWS = 13;
 var GRID_COLUMNS = 8;
-var START_ROWS = 12;
+var START_ROWS = 5;
 var BUBBLE_SIZE = 40;
 var CLUSTER_FALL_Y = 80;
 var CLUSTER_POINTS = 5;
@@ -24,9 +24,6 @@ var high_score = 19;
 var game_on = false;
 var currentType = -1;
 var nextType = -1;
-var game_length = 20000;
-var countdown_secs = game_length / 1000;
-var lang = 'en';
 var gameState = 0; // 0 == aiming, 1 = shooting, 2 = finding matches, 3 = falling bubbles, 4 = shifting
 var shotCount = 0;
 var clusterFallY = 0;
@@ -43,28 +40,10 @@ exports = Class(ui.View, function (supr) {
 		supr(this, 'init', [opts]);
 
 		this.build();
-
-		// console.log(this.findCluster(0, 0).length);
-
-		// console.log(this.findMatchBubbles(0, 0));
-
-		this.findNeighbors(this._grid[2][5]);
-		// console.log(this.findNeighbors(7, 0));
-		// this.shiftGrid();
-		// this.testBuild();
-		// this.testBuild2();
-
-		/*
-		for (var i=0; i<this._grid.length; i++) {
-			for (var j=0; j<this._grid[i].length; j++) {
-				console.log(i + ", " + j + " === " + this._grid[i][j].i + ", " + this._grid[i][j].j)
-			}
-		}
-		*/
 	};
 
+	// grid building functions
 	this.addBubble = function(gridPos) {
-	// this.addBubble = function(i, j, x, y, type) {
 		var bubble = new Bubble();
 		bubble.createBubbleImage(gridPos);
 		gridPos.setBubble(bubble);
@@ -95,16 +74,18 @@ exports = Class(ui.View, function (supr) {
 		this._bubbles = new Array();
 		for (var i=0; i<GRID_COLUMNS; i++) {
 			for (var j=0; j<GRID_ROWS; j++) {
-				if (this._grid[i][j].type >= 0) {
+				if (this._grid[i][j]._type >= 0) {
 					this.addBubble(this._grid[i][j]);
 				}
 			}
 		}
 	};
 
+	// main view building function
 	this.build = function() {
 
-		this.on('app:start', startGameFlow.bind(this));
+		// console.log(this);
+		this.on("app:start", startGameFlow.bind(this));
 
 		this._scoreBoard = new ui.TextView({
 			superview: this,
@@ -134,19 +115,15 @@ exports = Class(ui.View, function (supr) {
 		this.style.height = 480;
 		this._grid = new Array();
 
+		// build the grid
 		this.buildGrid();
-		/*
-		for (var i=0; i<GRID_COLUMNS; i++) {
-			for (var j=0; j<startRows; j++) {
-				console.log(i + ", " + j + " --- " + this._grid[i][j].style.x + ", " + this._grid[i][j].style.y + " /// " + )
-			}
-		}
-		*/
 
+		// create shooter
 		this._shooter = new Shooter();
 		this.addSubview(this._shooter);
 		this._shot = null;
 
+		// set up aiming view
 		this._aimView = new ui.View({
 			superview: this,
 			x: 0,
@@ -158,6 +135,7 @@ exports = Class(ui.View, function (supr) {
 		this._aiming = false;
 		this._lastY = 0;
 
+		// set up aiming touch events
 		this._aimView.on('InputStart', bind(this, function(evt, pt) {
 			if (gameState == 0) {
 				this.setShooterAngle(pt);
@@ -204,12 +182,13 @@ exports = Class(ui.View, function (supr) {
 			this.addSubview(this._shot);
 		};
 
+		// grid calculation functions
 		this.hasNeighbors = function(i, j) {
 			var openNeighbors = this.findOpenNeighbors(i, j);
 			// console.log(openNeighbors.length);
 			if (openNeighbors.length > 0) {
 				for (var i=0; i<openNeighbors.length; i++) {
-					if (this._grid[openNeighbors[i][0]][openNeighbors[i][1]].type >= 0)
+					if (this._grid[openNeighbors[i][0]][openNeighbors[i][1]]._type >= 0)
 						return true;
 				}
 			}
@@ -218,7 +197,7 @@ exports = Class(ui.View, function (supr) {
 
 		this.inOddRow = function(row) {
 			if (row < GRID_ROWS) {
-				if (this._grid[GRID_COLUMNS - 1][row].type == NO_BUBBLE)
+				if (this._grid[GRID_COLUMNS - 1][row]._type == NO_BUBBLE)
 					return true;
 			}
 			return false;
@@ -240,43 +219,43 @@ exports = Class(ui.View, function (supr) {
 		}
 
 		this.findNeighbors = function(gridPos) {
-			var col = gridPos.i;
-			var row = gridPos.j;
+			var col = gridPos._i;
+			var row = gridPos._j;
 			var neighbors = [];
 			// odd row
 			if (this.inOddRow(row)) {
-				if (row > 0 && this._grid[col][row-1].type != NO_BUBBLE)
+				if (row > 0 && this._grid[col][row-1]._type != NO_BUBBLE)
 					neighbors.push(this._grid[col][row-1]);
-				if (row > 0 && (col < (GRID_COLUMNS - 1)) && this._grid[col+1][row-1].type != NO_BUBBLE)
+				if (row > 0 && (col < (GRID_COLUMNS - 1)) && this._grid[col+1][row-1]._type != NO_BUBBLE)
 					neighbors.push(this._grid[col+1][row-1]);
-				if (col > 0 && this._grid[col-1][row].type != NO_BUBBLE)
+				if (col > 0 && this._grid[col-1][row]._type != NO_BUBBLE)
 					neighbors.push(this._grid[col-1][row]);
-				if ((col < (GRID_COLUMNS - 1)) && this._grid[col+1][row].type != NO_BUBBLE)
+				if ((col < (GRID_COLUMNS - 1)) && this._grid[col+1][row]._type != NO_BUBBLE)
 					neighbors.push(this._grid[col+1][row]);
-				if ((row < (this._grid.length - 1)) && this._grid[col][row+1].type != NO_BUBBLE)
+				if ((row < (this._grid.length - 1)) && this._grid[col][row+1]._type != NO_BUBBLE)
 					neighbors.push(this._grid[col][row+1]);
-				if ((col < (GRID_COLUMNS - 1)) && (row < (this._grid.length - 1)) && this._grid[col+1][row+1].type != NO_BUBBLE)
+				if ((col < (GRID_COLUMNS - 1)) && (row < (this._grid.length - 1)) && this._grid[col+1][row+1]._type != NO_BUBBLE)
 					neighbors.push(this._grid[col+1][row+1]);
 			}
 			// even row
 			else {
-				if (col > 0 && row > 0 && this._grid[col-1][row-1].type != NO_BUBBLE)
+				if (col > 0 && row > 0 && this._grid[col-1][row-1]._type != NO_BUBBLE)
 					neighbors.push(this._grid[col-1][row-1]);
-				if (row > 0 && this._grid[col][row-1].type != NO_BUBBLE)
+				if (row > 0 && this._grid[col][row-1]._type != NO_BUBBLE)
 					neighbors.push(this._grid[col][row-1]);
-				if (col > 0 && this._grid[col-1][row].type != NO_BUBBLE)
+				if (col > 0 && this._grid[col-1][row]._type != NO_BUBBLE)
 					neighbors.push(this._grid[col-1][row]);
-				if ((col < (GRID_COLUMNS - 1)) && this._grid[col+1][row].type != NO_BUBBLE)
+				if ((col < (GRID_COLUMNS - 1)) && this._grid[col+1][row]._type != NO_BUBBLE)
 					neighbors.push(this._grid[col+1][row]);
-				if (col > 0 && (row < (this._grid.length - 1)) && this._grid[col-1][row+1].type != NO_BUBBLE)
+				if (col > 0 && (row < (this._grid.length - 1)) && this._grid[col-1][row+1]._type != NO_BUBBLE)
 					neighbors.push(this._grid[col-1][row+1]);
-				if ((row < (this._grid.length - 1)) && this._grid[col][row+1].type != NO_BUBBLE)
+				if ((row < (this._grid.length - 1)) && this._grid[col][row+1]._type != NO_BUBBLE)
 					neighbors.push(this._grid[col][row+1]);
 			}
 			if (DEBUG) {
 				console.log("returning neighbors:");
 				for (var i=0; i<neighbors.length; i++)
-					console.log(neighbors[i].i + ", " + neighbors[i].j + " --- " + neighbors[i].type);
+					console.log(neighbors[i]._i + ", " + neighbors[i]._j + " --- " + neighbors[i]._type);
 			}
 			return neighbors;
 		};
@@ -284,13 +263,13 @@ exports = Class(ui.View, function (supr) {
 		this.findOpenNeighbors = function(gridPositions) {
 			var openNeighbors = [];
 			for (var i=0; i<gridPositions.length; i++) {
-				if (gridPositions[i].type == BLANK_BUBBLE)
+				if (gridPositions[i]._type == BLANK_BUBBLE)
 					openNeighbors.push(gridPositions[i]);
 			}
 			if (DEBUG) {
 				console.log("found open neighbors:");
 				for (var i=0; i<openNeighbors.length; i++)
-					console.log(openNeighbors[i].i + ", " + openNeighbors[i].j + " --- " + openNeighbors[i].type);
+					console.log(openNeighbors[i]._i + ", " + openNeighbors[i]._j + " --- " + openNeighbors[i]._type);
 			}
 			return openNeighbors;
 		};
@@ -299,7 +278,7 @@ exports = Class(ui.View, function (supr) {
 			var openNeighbors = this.findOpenNeighbors(this.findNeighbors(gridPos));
 			if (openNeighbors.length > 0) {
 				if (DEBUG)
-					console.log("found nearest open neighbor at " + openNeighbors[0].i + ", " + openNeighbors[0].j + " --- " + openNeighbors[0].type);
+					console.log("found nearest open neighbor at " + openNeighbors[0]._i + ", " + openNeighbors[0]._j + " --- " + openNeighbors[0]._type);
 				return openNeighbors[0];
 			}
 			return gridPos;
@@ -319,29 +298,29 @@ exports = Class(ui.View, function (supr) {
         var currentGridPos = toProcess.pop();
 
         // skip processed and empty tiles
-        if (currentGridPos.type == -1 || currentGridPos.type == -2)
+        if (currentGridPos._type == -1 || currentGridPos._type == -2)
           continue;
 
-				if (skipRemoved && currentGridPos.removed)
+				if (skipRemoved && currentGridPos._removed)
 					continue;
 
         // check if current tile has the right type, if matchtype is true
-        if (!matchType || currentGridPos.type == gridPos.type) {
+        if (!matchType || currentGridPos._type == gridPos._type) {
           // add current tile to the cluster
           foundCluster.push(currentGridPos);
 
 					if (DEBUG)
-						console.log("added " + currentGridPos.i + ", " + currentGridPos.j + " --- " + currentGridPos.type + " to cluster");
+						console.log("added " + currentGridPos._i + ", " + currentGridPos._j + " --- " + currentGridPos._type + " to cluster");
 
           // get the neighbors of the current tile
           var neighbors = this.findNeighbors(currentGridPos);
 
           // check the type of each neighbor
           for (var i=0; i<neighbors.length; i++) {
-            if (!neighbors[i].checked) {
+            if (!neighbors[i]._checked) {
               // add the neighbor to the toprocess array
               toProcess.push(neighbors[i]);
-              neighbors[i].checked = true;
+              neighbors[i]._checked = true;
             }
           }
         }
@@ -354,7 +333,7 @@ exports = Class(ui.View, function (supr) {
 		this.resetChecked = function() {
 			for (var i=0; i<this._grid.length; i++) {
 				for (var j=0; j<this._grid[i].length; j++) {
-					this._grid[i][j].checked = false;
+					this._grid[i][j]._checked = false;
 				}
 			}
 		};
@@ -368,7 +347,7 @@ exports = Class(ui.View, function (supr) {
 	    for (var i=0; i<this._grid.length; i++) {
         for (var j=0; j<this._grid[0].length; j++) {
           var gridPos = this._grid[i][j];
-          if (!gridPos.checked) {
+          if (!gridPos._checked) {
             // Find all attached tiles
             var foundcluster = this.findCluster(gridPos, false, false, true);
 
@@ -411,13 +390,13 @@ exports = Class(ui.View, function (supr) {
 
 			var foundPos = false;
 			this._newGridPos = this._grid[gridColRow.col][gridColRow.row];
-			if (this._newGridPos.type != BLANK_BUBBLE)
+			if (this._newGridPos._type != BLANK_BUBBLE)
 				this._newGridPos = this.findNearestOpenNeighbor(this._newGridPos);
 			if (this._newGridPos != null) {
 				if (DEBUG)
-					console.log("shot hit at " + this._newGridPos.i + ", " + this._newGridPos.j);
+					console.log("shot hit at " + this._newGridPos._i + ", " + this._newGridPos._j);
 				// this._newGridPos = this._grid[gridColRow.col][gridColRow.row];
-				this._newGridPos.setType(this._shot.type);
+				this._newGridPos.setType(this._shot._type);
 				this.addBubble(this._newGridPos);
 				gameState = 2;
 			}
@@ -439,7 +418,7 @@ exports = Class(ui.View, function (supr) {
 
 			var newRow = new Array();
 			var fullRow = false;
-			if (this._grid[GRID_COLUMNS - 1][0].type == NO_BUBBLE)
+			if (this._grid[GRID_COLUMNS - 1][0]._type == NO_BUBBLE)
 				fullRow = true;
 			for (var i=0; i<GRID_COLUMNS; i++) {
 				var gridPos = new GridPos();
@@ -456,7 +435,7 @@ exports = Class(ui.View, function (supr) {
 				var shiftedCol = [];
 				shiftedCol.push(newRow[i]);
 				for (var j=0; j<this._grid[i].length; j++) {
-					this._grid[i][j].j += 1;
+					this._grid[i][j]._j += 1;
 					shiftedCol.push(this._grid[i][j]);
 				}
 				shiftedGrid.push(shiftedCol);
@@ -469,7 +448,7 @@ exports = Class(ui.View, function (supr) {
 
 		this.checkForBubblesInLastRow = function() {
 			for (var i=0; i<GRID_COLUMNS - 1; i++) {
-				if (this._grid[i][GRID_ROWS - 1].type >= 0)
+				if (this._grid[i][GRID_ROWS - 1]._type >= 0)
 					return true;
 			}
 			return false;
@@ -486,7 +465,7 @@ exports = Class(ui.View, function (supr) {
 				for (var i=0; i<this._grid.length; i++) {
 					if (i > 0)
 						rowStr += ",";
-					rowStr += this._grid[i][j].type;
+					rowStr += this._grid[i][j]._type;
 				}
 				console.log(rowStr);
 			}
@@ -497,8 +476,11 @@ exports = Class(ui.View, function (supr) {
 function startGameFlow() {
 	game_on = true;
 
+	console.log("startGameFlow");
+
 	// update to handle gameplay
 	GC.app.engine.on('Tick', bind(this, function() {
+		// console.log("update running");
 		switch (gameState) {
 			case 1:
 				// check for where the shot hit
@@ -515,7 +497,7 @@ function startGameFlow() {
 					for (var i=0; i<this._grid.length; i++) {
 						for (var j=0; j<this._grid[i].length; j++) {
 							var gridPos = this._grid[i][j];
-							if (gridPos.type == BLANK_BUBBLE || gridPos.type == NO_BUBBLE)
+							if (gridPos._type == BLANK_BUBBLE || gridPos._type == NO_BUBBLE)
 								continue;
 
 							if (circleIntersection(gridPos.style.x + BUBBLE_SIZE / 2, gridPos.style.y + BUBBLE_SIZE / 2, BUBBLE_SIZE / 2,
@@ -539,11 +521,11 @@ function startGameFlow() {
 						console.log("found cluster:");
 					for (var i=0; i<cluster.length; i++) {
 						if (DEBUG)
-							console.log(cluster[i].i + ", " + cluster[i].j + " --- " + cluster[i].type);
-						cluster[i].type = -1;
+							console.log(cluster[i]._i + ", " + cluster[i]._j + " --- " + cluster[i]._type);
+						cluster[i]._type = -1;
 						cluster[i].deleteBubble();
 						// cluster[i].bubble.removeFromSuperview();
-						cluster[i].bubble = null;
+						cluster[i]._bubble = null;
 					}
 
 					// find floating bubbles
@@ -552,9 +534,9 @@ function startGameFlow() {
 						this._floatingBubbles = [];
 						for (var i=0; i<floatingClusters.length; i++) {
 							for (var j=0; j<floatingClusters[i].length; j++) {
-								floatingClusters[i][j].type = -1;
-								this._floatingBubbles.push(floatingClusters[i][j].bubble);
-								floatingClusters[i][j].bubble = null;
+								floatingClusters[i][j]._type = -1;
+								this._floatingBubbles.push(floatingClusters[i][j]._bubble);
+								floatingClusters[i][j]._bubble = null;
 								// add to score
 								this.addToScore(1);
 							}
@@ -599,6 +581,7 @@ function startGameFlow() {
 				if (this.checkForBubblesInLastRow()) {
 					gameState = 5;
 					endGameFlow.call(this);
+					return;
 				}
 				// or start new turn
 				else {
@@ -609,66 +592,50 @@ function startGameFlow() {
 	}));
 }
 
+/* begin ending the game, displays game over and emits end event */
 function endGameFlow() {
+	console.log(GC.app.engine);
 	this._scoreBoard.setText("Score: " + score);
 	this._nextView.displayGameOver();
 	setTimeout(emitEndEvent.bind(this), 2000);
 }
 
-/* Tell the main app to switch back to the title screen.
- */
+/* tell the main app to switch back to the title screen */
 function emitEndEvent() {
 	this.emit("gamescreen:end");
 	resetGame.call(this);
 }
 
-/* Reset game counters and assets.
- */
+/* reset game counters and assets */
 function resetGame() {
+	console.log(this);
+
 	score = 0;
 	gameState = 0;
 	// remove old grid
+	console.log("resetGame");
 	for (var i=0; i<GRID_COLUMNS; i++) {
 		for (var j=0; j<GRID_ROWS; j++) {
-			this._grid[i][j].deleteBubble();
 			this._grid[i][j].removeFromSuperview();
 		}
 	}
+
+	for (var i=0; i<this._bubbles.length; i++)
+		this._bubbles[i].removeFromSuperview();
 
 	if (this._shot != null) {
 		this._shot.removeFromSuperview();
 		this._shot = null;
 	}
 
+	this._nextView.reset();
+
 	this.buildGrid();
-	/*
-	countdown_secs = game_length / 1000;
-	this._scoreBoard.setText('');
-	/*
-	this._molehills.forEach(function (molehill) {
-		molehill.resetMole();
-	});
-	this._scoreBoard.updateOpts({
-		x: 0,
-		fontSize: 38,
-		verticalAlign: 'middle',
-		textAlign: 'center',
-		multiline: false
-	});
-	this._countdown.updateOpts({
-		visible: false,
-		color: '#fff'
-	});
-	*/
 }
 
 // utilities
 function getRandomInt(min, max) {
     return Math.floor(Math.random() * (max - min + 1)) + min;
-}
-
-function rect(x, y, w, h) {
-	return { x: x, y: y, w: w, h: h};
 }
 
 function circleIntersection(x1, y1, r1, x2, y2, r2) {

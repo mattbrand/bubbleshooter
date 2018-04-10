@@ -3,6 +3,7 @@ import ui.ImageView;
 import ui.resource.Image as Image;
 
 var BUBBLE_SIZE = 40;
+
 var bubbleImg = new Image({url: "resources/images/bubble.png"});
 var bubblePurpleImg = new Image({url: "resources/images/bubble_purple.png"});
 var bubbleYellowImg = new Image({url: "resources/images/bubble_yellow.png"});
@@ -19,13 +20,13 @@ exports = Class(ui.View, function (supr) {
 	};
 
   this.createBubbleImage = function(gridPos) {
-		this.i = gridPos.i;
-		this.j = gridPos.j;
-		this.type = gridPos.type;
+		this._i = gridPos._i;
+		this._j = gridPos._j;
+		this._type = gridPos._type;
 
 		var image = null;
 		var opacity = 1;
-		switch (gridPos.type) {
+		switch (gridPos._type) {
 			case 0:
 				image = bubbleImg;
 				break;
