@@ -33,10 +33,10 @@ exports = Class(ui.ImageView, function (supr) {
 		 */
 		var startbutton = new ui.View({
 			superview: this,
-			x: 58,
-			y: 313,
-			width: 200,
-			height: 100
+			x: 0,
+			y: 0,
+			width: 320,
+			height: 570
 		});
 
 		/* Listening for a touch or click event, and will dispatch a

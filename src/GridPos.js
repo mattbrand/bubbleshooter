@@ -39,7 +39,6 @@ exports = Class(ui.View, function (supr) {
 		this._j = j;
 		this._type = type;
 		this._checked = false;
-		this._removed = false;
 
 		var xPos = i * BUBBLE_SIZE;
 		if (useYOffset) {

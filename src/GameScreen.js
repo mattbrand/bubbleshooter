@@ -204,7 +204,7 @@ exports = Class(ui.View, function (supr) {
 		};
 
 		this.getGridPosition = function(x, y) {
-	    var j = Math.floor(y / (BUBBLE_SIZE * 0.85));
+	    var j = Math.floor((y + (BUBBLE_SIZE / 8)) / (BUBBLE_SIZE * 0.85));
 
 	    // Check for offset
 	    var xOffset = 0;
@@ -284,13 +284,13 @@ exports = Class(ui.View, function (supr) {
 			return gridPos;
 		};
 
-		this.findCluster = function(gridPos, matchType, reset, skipRemoved) {
+		this.findCluster = function(gridPos, matchType, reset) {
 			if (reset)
 		    this.resetChecked();
 
 	    // initialize the toprocess array with the specified tile
 	    var toProcess = [gridPos];
-	    gridPos.checked = true;
+	    gridPos._checked = true;
 	    var foundCluster = [];
 
 	    while (toProcess.length > 0) {
@@ -300,9 +300,6 @@ exports = Class(ui.View, function (supr) {
         // skip processed and empty tiles
         if (currentGridPos._type == -1 || currentGridPos._type == -2)
           continue;
-
-				if (skipRemoved && currentGridPos._removed)
-					continue;
 
         // check if current tile has the right type, if matchtype is true
         if (!matchType || currentGridPos._type == gridPos._type) {
@@ -348,26 +345,26 @@ exports = Class(ui.View, function (supr) {
         for (var j=0; j<this._grid[0].length; j++) {
           var gridPos = this._grid[i][j];
           if (!gridPos._checked) {
-            // Find all attached tiles
-            var foundcluster = this.findCluster(gridPos, false, false, true);
+            // find all attached tiles
+            var foundcluster = this.findCluster(gridPos, false, false);
 
-            // There must be a tile in the cluster
+            // if nothing in cluster, skip
             if (foundcluster.length <= 0) {
               continue;
             }
 
-            // Check if the cluster is floating
+            // check if the cluster is floating
             var floating = true;
             for (var k=0; k<foundcluster.length; k++) {
               if (foundcluster[k].style.y == 0) {
-                // Tile is attached to the roof
+                // tile is attached to the roof
                 floating = false;
                 break;
               }
             }
 
             if (floating) {
-                // Found a floating cluster
+                // found a floating cluster
                 foundclusters.push(foundcluster);
             }
           }
@@ -390,11 +387,17 @@ exports = Class(ui.View, function (supr) {
 
 			var foundPos = false;
 			this._newGridPos = this._grid[gridColRow.col][gridColRow.row];
-			if (this._newGridPos._type != BLANK_BUBBLE)
+
+			if (DEBUG)
+				console.log("shot hit at " + this._newGridPos._i + ", " + this._newGridPos._j);
+
+			if (this._newGridPos._type != BLANK_BUBBLE) {
+				console.log("not a blank bubble, finding nearest open neighbor");
 				this._newGridPos = this.findNearestOpenNeighbor(this._newGridPos);
+			}
 			if (this._newGridPos != null) {
 				if (DEBUG)
-					console.log("shot hit at " + this._newGridPos._i + ", " + this._newGridPos._j);
+					console.log("starting shot calculation at " + this._newGridPos._i + ", " + this._newGridPos._j);
 				// this._newGridPos = this._grid[gridColRow.col][gridColRow.row];
 				this._newGridPos.setType(this._shot._type);
 				this.addBubble(this._newGridPos);
@@ -513,12 +516,12 @@ function startGameFlow() {
 				break;
 			case 2:
 				// check for a cluster to remove
-				var cluster = this.findCluster(this._newGridPos, true, true, false);
+				var cluster = this.findCluster(this._newGridPos, true, true);
 				if (cluster.length >= MIN_CLUSTER_SIZE) {
 					//add to score
 					this.addToScore(cluster.length * CLUSTER_POINTS);
 					if (DEBUG)
-						console.log("found cluster:");
+						console.log("found cluster size " + cluster.length);
 					for (var i=0; i<cluster.length; i++) {
 						if (DEBUG)
 							console.log(cluster[i]._i + ", " + cluster[i]._j + " --- " + cluster[i]._type);
