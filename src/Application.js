@@ -1,6 +1,7 @@
 /*
- * The main application file, your game code begins here.
- */
+  name: Application.js
+  description: the main driver of the game
+*/
 
 //sdk imports
 import device;
@@ -24,7 +25,7 @@ exports = Class(GC.Application, function() {
 
 		this.view.style.backgroundColor = '#111111';
 
-		// Create a stackview of size 320x480, then scale it to fit horizontally
+		// Create a stackview of size 750, then scale it to fit horizontally
 		// Add a new StackView to the root of the scene graph
 		var rootView = new StackView({
 			superview: this,

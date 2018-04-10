@@ -1,3 +1,8 @@
+/*
+  name: Shot.js
+  description: the shot fired by a player, which looks the same as a bubble
+*/
+
 import ui.View;
 import ui.ImageView;
 import ui.resource.Image as Image;
@@ -25,6 +30,7 @@ exports = Class(ui.View, function (supr) {
 
   this._shotImg = null;
 
+	// launches the shot, using input parameters to determine the starting location and type
 	this.launch = function(x, y, type, shot) {
     this._type = type;
     var image = null;
@@ -60,12 +66,9 @@ exports = Class(ui.View, function (supr) {
 		});
 	}.bind(this);
 
+	// moves the shot upwards on the screen towards the bubble grid
   this.move = function(x, y) {
     this._shotImg.style.x -= x * SHOT_SPEED;
     this._shotImg.style.y -= y * SHOT_SPEED;
-  };
-
-  this.delete = function() {
-    this._shotImg.style.scale = 0;
   };
 });

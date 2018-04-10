@@ -1,3 +1,8 @@
+/*
+  name: GridView.js
+  description: holds the 2d array of grid locations, and handles all functionality for it
+*/
+
 import ui.View;
 import ui.ImageView;
 import ui.TextView;
@@ -28,6 +33,7 @@ exports = Class(ui.View, function (supr) {
 	};
 
 	// grid building functions
+  // add a bubble to the view
 	this.addBubble = function(gridPos) {
 		var bubble = new Bubble();
 		bubble.createBubbleImage(gridPos);
@@ -36,7 +42,10 @@ exports = Class(ui.View, function (supr) {
 		this._bubbles.push(bubble);
 	};
 
+  // build the 2d array of grid positions, and add bubbles in the starting grid positions
 	this.buildGrid = function() {
+    // initialize 2d grid array
+    this._grid = new Array();
 		for (var i=0; i<GRID_COLUMNS; i++) {
 			var arrayRow = [];
 			for (var j=0; j<GRID_ROWS; j++) {
@@ -56,6 +65,7 @@ exports = Class(ui.View, function (supr) {
 			this._grid.push(arrayRow);
 		}
 
+    // add starting bubbles
 		this._bubbles = new Array();
 		for (var i=0; i<GRID_COLUMNS; i++) {
 			for (var j=0; j<GRID_ROWS; j++) {
@@ -69,9 +79,9 @@ exports = Class(ui.View, function (supr) {
 	// main view building function
 	this.build = function() {
 
+    // basic style info
 		this.style.width = 320;
 		this.style.height = 570;
-		this._grid = new Array();
 
 		// build the grid
 		this.buildGrid();
@@ -89,6 +99,7 @@ exports = Class(ui.View, function (supr) {
 			return false;
 		};
 
+    // check if the bubble is in an odd row, with one less bubble on the end
 		this.inOddRow = function(row) {
 			if (row < GRID_ROWS) {
         if (row < 0)
@@ -99,6 +110,7 @@ exports = Class(ui.View, function (supr) {
 			return false;
 		};
 
+    // get the grid coordinates of a bubble that we know the screen coordinates of
 		this.getGridPosition = function(x, y) {
 	    var j = Math.floor((y + (BUBBLE_SIZE / GRID_COLUMNS)) / (BUBBLE_SIZE * 0.85));
 
@@ -114,6 +126,7 @@ exports = Class(ui.View, function (supr) {
 	    return { col: i, row: j };
 		}
 
+    // finds all the valid neighbors for a grid position
 		this.findNeighbors = function(gridPos) {
 			var col = gridPos._i;
 			var row = gridPos._j;
@@ -156,6 +169,7 @@ exports = Class(ui.View, function (supr) {
 			return neighbors;
 		};
 
+    // finds all open neighbors, which means spots where a bubble can land
 		this.findOpenNeighbors = function(gridPositions) {
 			var openNeighbors = [];
 			for (var i=0; i<gridPositions.length; i++) {
@@ -170,6 +184,7 @@ exports = Class(ui.View, function (supr) {
 			return openNeighbors;
 		};
 
+    // finds the nearest open neighbor, to get the best spot a bubble can land
 		this.findNearestOpenNeighbor = function(gridPos) {
 			var openNeighbors = this.findOpenNeighbors(this.findNeighbors(gridPos));
 			if (openNeighbors.length > 0) {
@@ -180,6 +195,7 @@ exports = Class(ui.View, function (supr) {
 			return gridPos;
 		};
 
+    // returns a cluster of bubbles based on the input parameter grid position, either matching type or not
 		this.findCluster = function(gridPos, matchType, reset) {
 			if (reset)
 		    this.resetChecked();
@@ -223,6 +239,7 @@ exports = Class(ui.View, function (supr) {
     	return foundCluster;
 		};
 
+    // reset checked flag for all bubbles
 		this.resetChecked = function() {
 			for (var i=0; i<this._grid.length; i++) {
 				for (var j=0; j<this._grid[i].length; j++) {
@@ -231,6 +248,7 @@ exports = Class(ui.View, function (supr) {
 			}
 		};
 
+    // returns an array of all floating clusters, to be used to determine which bubbles will fall
 		this.findFloatingClusters = function() {
     	this.resetChecked();
 
@@ -270,6 +288,10 @@ exports = Class(ui.View, function (supr) {
 		  return foundclusters;
 		};
 
+    // snaps the shot to the grid by determining the best location, setting the grid pos type,
+    // instantiating a new bubble, deleting the shot.
+    // returns 2 if a valid location was found, and the gameState should proceed to 2 = finding matches
+    // or 0 if a valid location was not found, for the player to start another turn
 		this.snapShotToGrid = function(shot) {
 			var gridColRow = this.getGridPosition(shot._shotImg.style.x, shot._shotImg.style.y);
 			if (gridColRow.col < 0)
@@ -307,6 +329,7 @@ exports = Class(ui.View, function (supr) {
       return 0;
 		};
 
+    // shifts the grid down one spot, adds a new row of bubbles on top
 		this.shiftGrid = function() {
 			for (var i=0; i<this._grid.length; i++) {
 				for (var j=0; j<this._grid[i].length; j++) {
@@ -344,6 +367,7 @@ exports = Class(ui.View, function (supr) {
 				console.log("shifted grid");
 		};
 
+    // checks if bubbles are in the last row, to determine if the player loses the game
 		this.checkForBubblesInLastRow = function() {
 			for (var i=0; i<GRID_COLUMNS - 1; i++) {
 				if (this._grid[i][GRID_ROWS - 1]._type >= 0)
@@ -352,11 +376,7 @@ exports = Class(ui.View, function (supr) {
 			return false;
 		};
 
-		this.addToScore = function(points) {
-			score += points;
-			this._scoreBoard.setText("SCORE: " + score);
-		};
-
+    // debug functionality
 		this.displayGridDebug = function() {
 			for (var j=0; j<this._grid[0].length; j++) {
 				var rowStr = "";
@@ -370,18 +390,6 @@ exports = Class(ui.View, function (supr) {
 		};
 	};
 });
-
-/* reset
-
-for (var i=0; i<GRID_COLUMNS; i++) {
-  for (var j=0; j<GRID_ROWS; j++) {
-    this._grid[i][j].removeFromSuperview();
-  }
-}
-
-for (var i=0; i<this._bubbles.length; i++)
-  this._bubbles[i].removeFromSuperview();
-*/
 
 // utilities
 function getRandomInt(min, max) {

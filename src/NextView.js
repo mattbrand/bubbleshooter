@@ -1,3 +1,8 @@
+/*
+  name: NextView.js
+  description: displays the current and next player shot. also gets used to display a game over state
+*/
+
 import ui.View;
 import ui.ImageView;
 import ui.TextView;
@@ -27,6 +32,7 @@ exports = Class(ui.View, function (supr) {
     this.build();
   };
 
+	// builds the 2 texts and images to use to display the player's next and current shot types
   this.build = function() {
     this._currentPanel = new ui.TextView({
 			superview: this,
@@ -63,6 +69,7 @@ exports = Class(ui.View, function (supr) {
     this._nextPanel.setText("NEXT");
   };
 
+	// sets the type for the current bubble, which is the one about to be shot
   this.setCurrentBubble = function(type) {
     if (this._currentBubbleImg != null) {
       this._currentBubbleImg.removeFromSuperview();
@@ -97,6 +104,7 @@ exports = Class(ui.View, function (supr) {
     this.addSubview(this._currentBubbleImg);
   };
 
+	// sets the type for the next bubble, which is the one to be shot next
   this.setNextBubble = function(type) {
     if (this._nextBubbleImg != null) {
       this._nextBubbleImg.removeFromSuperview();
@@ -131,6 +139,7 @@ exports = Class(ui.View, function (supr) {
     this.addSubview(this._nextBubbleImg);
   };
 
+	// changes the bottom display text to say Game Over
   this.displayGameOver = function() {
     this._nextPanel.setText("Game ");
     this._currentPanel.setText("Over!");
@@ -138,6 +147,7 @@ exports = Class(ui.View, function (supr) {
     this._nextBubbleImg.style.opacity = 0;
   };
 
+	// resets the bottom display info
   this.reset = function() {
     this._currentPanel.setText("Curr:");
     this._nextPanel.setText("Next:");

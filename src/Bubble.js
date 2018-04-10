@@ -1,3 +1,8 @@
+/*
+  name: Bubble.js
+  description: displays a bubble
+*/
+
 import ui.View;
 import ui.ImageView;
 import ui.resource.Image as Image;
@@ -20,6 +25,7 @@ exports = Class(ui.View, function (supr) {
 		supr(this, 'init', [opts]);
 	};
 
+	// create the image view of the bubble, based on the type of the grid position the bubble is to be instantiated in
   this.createBubbleImage = function(gridPos) {
 		this._i = gridPos._i;
 		this._j = gridPos._j;
@@ -56,10 +62,12 @@ exports = Class(ui.View, function (supr) {
     this.addSubview(this._bubbleImg);
 	};
 
+	// shift the bubble down - used when shifting the grid
   this.shiftDown = function() {
     this._bubbleImg.style.y += BUBBLE_SIZE * 0.85
   };
 
+	// move the bubble - used when bubbles fall when they are not attached to the top of the screen
 	this.moveY = function(yDiff) {
 		this._bubbleImg.style.y += yDiff;
 	};

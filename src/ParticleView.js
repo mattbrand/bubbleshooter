@@ -1,3 +1,8 @@
+/*
+  name: ParticleView.js
+  description: handles particle creation, updating and deletion
+*/
+
 import ui.View;
 import ui.ImageView;
 import ui.resource.Image as Image;
@@ -15,9 +20,11 @@ exports = Class(ui.View, function (supr) {
 
 		supr(this, 'init', [opts]);
 
+    // initialize the particle array
     this._particles = [];
 	};
 
+  // update the particles - make them shrink, and remove them if they are small enough
   this.updateParticles = function() {
     for (var i=this._particles.length - 1; i>=0; i--) {
       if (this._particles[i] != null) {
@@ -30,6 +37,7 @@ exports = Class(ui.View, function (supr) {
     }
   };
 
+  // add a particle - create it and add it to the particle array
   this.addExplosion = function(x, y) {
     var explosion = new ui.ImageView({
 			superview: this,

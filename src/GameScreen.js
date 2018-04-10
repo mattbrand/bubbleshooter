@@ -1,3 +1,8 @@
+/*
+  name: GameScreen.js
+  description: the main game view that handles all game play
+*/
+
 import ui.View;
 import ui.ImageView;
 import ui.TextView;
@@ -15,11 +20,11 @@ var CLUSTER_FALL_Y = 80;
 var CLUSTER_POINTS = 5;
 var SHOT_COUNT_TO_NEW_ROW = 5;
 var MAX_BUBBLE_TYPE = 4;
+var MAX_PLAYER_INPUT_Y = 470;
 var BUBBLE_SIZE = 40;
 var DEBUG = false;
 
 var spaceImgStr = "resources/images/space.png";
-
 var score = 0;
 var currentType = -1;
 var nextType = -1;
@@ -91,6 +96,7 @@ exports = Class(ui.View, function (supr) {
 		nextType = getRandomInt(0, MAX_BUBBLE_TYPE);
 		this._nextView.setNextBubble(nextType);
 
+		// main style attributes
 		this.style.width = 320;
 		this.style.height = 570;
 
@@ -108,10 +114,12 @@ exports = Class(ui.View, function (supr) {
 			height: 480
 		});
 
+		// used for the shooter movement
 		this._aiming = false;
 		this._lastY = 0;
 
 		// set up aiming touch events
+		// touch start - initializes the touch data
 		this._aimView.on('InputStart', bind(this, function(evt, pt) {
 			if (gameState == 0) {
 				this.setShooterAngle(pt);
@@ -120,6 +128,7 @@ exports = Class(ui.View, function (supr) {
 			}
 		}));
 
+		// touch move - updates touch data
 		this._aimView.on('InputMove', bind(this, function(evt, pt) {
 			if (gameState == 0) {
 				if (this._aiming) {
@@ -129,11 +138,12 @@ exports = Class(ui.View, function (supr) {
 			}
 		}));
 
+		// touch end - fires the shot if the player is tapping in the acceptable area
 		this._aimView.on('InputOut', bind(this, function(evt, pt) {
 			if (gameState == 0) {
 				if (this._aiming) {
 					this._aiming = false;
-					if (this._lastY < 470) {
+					if (this._lastY < MAX_PLAYER_INPUT_Y) {
 						this.fireShot();
 						shotCount++;
 						gameState = 1;
@@ -142,6 +152,7 @@ exports = Class(ui.View, function (supr) {
 			}
 		}));
 
+		// rotates the player shooter
 		this.setShooterAngle = function(pt) {
 			this._shooter.setAngle(pt);
 		};
@@ -160,11 +171,13 @@ exports = Class(ui.View, function (supr) {
 			this.addSubview(this._shot);
 		};
 
+		// adds to the score and updates the scorebaord
 		this.addToScore = function(points) {
 			score += points;
 			this.setScoreText();
 		};
 
+		// updates the scoreboard text
 		this.setScoreText = function() {
 			this._scoreBoard.setText("SCORE: " + score);
 		};
@@ -206,8 +219,10 @@ function startGameFlow() {
 							if (gridPos._type == BLANK_BUBBLE || gridPos._type == NO_BUBBLE)
 								continue;
 
+							// if a valid intersectino is found, the shot has hit a bubble and needs to snap to the grid
 							if (circleIntersection(gridPos.style.x + BUBBLE_SIZE / 2, gridPos.style.y + BUBBLE_SIZE / 2, BUBBLE_SIZE / 2,
 																		 this._shot._shotImg.style.x + BUBBLE_SIZE / 2, this._shot._shotImg.style.y + BUBBLE_SIZE / 2, BUBBLE_SIZE / 2)) {
+								// this next function returns 2 if the bubble can snap to a valid location, and 0 if not
 								var nextGameState = this._gridView.snapShotToGrid(this._shot);
 								this._shot.removeFromSuperview();
 								this._shot = null;
@@ -253,12 +268,15 @@ function startGameFlow() {
 								this.addToScore(1);
 							}
 						}
+						// clusters found, move to floating bubble handling
 						clusterFallY = 0;
 						gameState = 3;
 					}
+					// no clusters, found, move to grid shift check
 					else
 						gameState = 4;
 				}
+				// no clusters, found, move to grid shift check
 				else {
 					gameState = 4;
 				}
@@ -324,7 +342,6 @@ function resetGame() {
 	gameState = 0;
 
 	this._bg.removeFromSuperview();
-
 	this._gridView.removeFromSuperview();
 
 	if (this._shot != null) {
@@ -333,7 +350,6 @@ function resetGame() {
 	}
 
 	this._aimView.removeFromSuperview();
-
 	this._shooter.removeFromSuperview();
 	this._shooter = null;
 	this._nextView.removeFromSuperview();

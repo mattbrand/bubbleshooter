@@ -1,3 +1,8 @@
+/*
+  name: Shooter.js
+  description: displays the player shooting object, where the shots get initiated from
+*/
+
 import ui.View;
 import ui.ImageView;
 import ui.resource.Image as Image;
@@ -24,6 +29,8 @@ exports = Class(ui.View, function (supr) {
     this.build();
 	};
 
+	// adds the player shooter, which sits at the bottom of the screen, rotates with the player's touch input and
+	// fires the new bubbles
   this.build = function() {
 		this._shooterImg = new ui.ImageView({
 			superview: this,
@@ -37,6 +44,7 @@ exports = Class(ui.View, function (supr) {
 		});
   };
 
+	// rotates the player graphic to be angled as they press on the screen
 	this.setAngle = function(pt) {
 		var xDiff = (START_X + (SHOOTER_WIDTH / 2)) - pt.x;
 		var yDiff = START_Y - pt.y;
@@ -55,7 +63,6 @@ exports = Class(ui.View, function (supr) {
 		this._angle = angle;
 
 		// utilities
-
 		function radToDeg(angle) {
     	return angle * (180 / Math.PI);
 		}

@@ -1,9 +1,13 @@
+/*
+  name: SoundController.js
+  description: handles all audio - bg music and sound effects
+*/
+
 import AudioManager;
 
 exports.sound = null;
 
-/* Initialize the audio files if they haven't been already.
- */
+// initialize the audio files if they haven't been already
 exports.getSound = function () {
   if (!exports.sound) {
     exports.sound = new AudioManager({
