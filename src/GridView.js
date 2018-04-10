@@ -8,7 +8,7 @@ var BLANK_BUBBLE = -1;
 var NO_BUBBLE = -2;
 var GRID_ROWS = 13;
 var GRID_COLUMNS = 8;
-var START_ROWS = 12;
+var START_ROWS = 5;
 var BUBBLE_SIZE = 40;
 var DEBUG = false;
 

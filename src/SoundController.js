@@ -15,7 +15,11 @@ exports.getSound = function () {
           background: true,
           loop: true
         },
-        whack: {
+        pop: {
+          path: 'effect',
+          background: false
+        },
+        pops: {
           path: 'effect',
           background: false
         }
