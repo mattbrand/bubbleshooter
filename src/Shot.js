@@ -11,6 +11,7 @@ var bubbleImg = new Image({url: "resources/images/bubble.png"});
 var bubblePurpleImg = new Image({url: "resources/images/bubble_purple.png"});
 var bubbleYellowImg = new Image({url: "resources/images/bubble_yellow.png"});
 var bubbleRedImg = new Image({url: "resources/images/bubble_red.png"});
+var bubbleLightImg = new Image({url: "resources/images/bubble_light.png"});
 
 exports = Class(ui.View, function (supr) {
 	this.init = function (opts) {
@@ -39,6 +40,9 @@ exports = Class(ui.View, function (supr) {
 				break;
 			case 3:
 				image = bubbleRedImg;
+				break;
+			case 4:
+				image = bubbleLightImg;
 				break;
 			case -1:
 			case -2:
