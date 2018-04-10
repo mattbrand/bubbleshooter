@@ -116,6 +116,9 @@ exports = Class(ui.View, function (supr) {
 			case 3:
 				imageStr = bubbleRedImgStr;
 				break;
+			case 4:
+				imageStr = bubbleLightImgStr;
+				break;
 		}
     this._nextBubbleImg = new ui.ImageView({
 			superview: this,

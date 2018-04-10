@@ -2,6 +2,7 @@ import ui.View;
 import ui.ImageView;
 import ui.TextView;
 import src.GridView as GridView;
+import src.ParticleView as ParticleView;
 import src.Shooter as Shooter;
 import src.Shot as Shot;
 import src.NextView as NextView;
@@ -62,6 +63,9 @@ exports = Class(ui.View, function (supr) {
 		// add the view that holds the grid positions and the bubbles within it
 		this._gridView = new GridView();
 		this.addSubview(this._gridView);
+
+		this._particleView = new ParticleView();
+		this.addSubview(this._particleView);
 
 		// add thew score view
 		this._scoreBoard = new ui.TextView({
@@ -172,6 +176,8 @@ function startGameFlow() {
 
 	// update to handle gameplay
 	GC.app.engine.on('Tick', bind(this, function() {
+		if (this._particleView != null)
+			this._particleView.updateParticles();
 		// console.log("update running");
 		switch (gameState) {
 			case 1:
@@ -229,7 +235,7 @@ function startGameFlow() {
 							console.log(cluster[i]._i + ", " + cluster[i]._j + " --- " + cluster[i]._type);
 						cluster[i]._type = -1;
 						cluster[i].deleteBubble();
-						// cluster[i].bubble.removeFromSuperview();
+						this._particleView.addExplosion(cluster[i].style.x, cluster[i].style.y);
 						cluster[i]._bubble = null;
 					}
 
@@ -269,6 +275,7 @@ function startGameFlow() {
 						for (var i=0; i<this._floatingBubbles.length; i++) {
 							sound.play("pop");
 							this._floatingBubbles[i]._bubbleImg.removeFromSuperview();
+							this._particleView.addExplosion(this._floatingBubbles[i]._bubbleImg.style.x, this._floatingBubbles[i]._bubbleImg.style.y);
 						}
 						this._floatingBubbles = [];
 						gameState++;
