@@ -7,6 +7,7 @@ import src.Bubble as Bubble;
 import src.Shooter as Shooter;
 import src.Shot as Shot;
 import src.NextView as NextView;
+import src.SoundController as SoundController;
 
 var MIN_CLUSTER_SIZE = 3;
 var BLANK_BUBBLE = -1;
@@ -27,6 +28,7 @@ var nextType = -1;
 var gameState = 0; // 0 == aiming, 1 = shooting, 2 = finding matches, 3 = falling bubbles, 4 = shifting
 var shotCount = 0;
 var clusterFallY = 0;
+var sound;
 
 exports = Class(ui.View, function (supr) {
 	this.init = function (opts) {
@@ -83,6 +85,8 @@ exports = Class(ui.View, function (supr) {
 
 	// main view building function
 	this.build = function() {
+
+		sound = SoundController.getSound();
 
 		// console.log(this);
 		this.on("app:start", startGameFlow.bind(this));
@@ -392,7 +396,8 @@ exports = Class(ui.View, function (supr) {
 				console.log("shot hit at " + this._newGridPos._i + ", " + this._newGridPos._j);
 
 			if (this._newGridPos._type != BLANK_BUBBLE) {
-				console.log("not a blank bubble, finding nearest open neighbor");
+				if (DEBUG)
+					console.log("not a blank bubble, finding nearest open neighbor");
 				this._newGridPos = this.findNearestOpenNeighbor(this._newGridPos);
 			}
 			if (this._newGridPos != null) {
@@ -518,6 +523,8 @@ function startGameFlow() {
 				// check for a cluster to remove
 				var cluster = this.findCluster(this._newGridPos, true, true);
 				if (cluster.length >= MIN_CLUSTER_SIZE) {
+					// play pops sound
+					sound.play("pops");
 					//add to score
 					this.addToScore(cluster.length * CLUSTER_POINTS);
 					if (DEBUG)
@@ -565,6 +572,7 @@ function startGameFlow() {
 
 					if (clusterFallY >= CLUSTER_FALL_Y) {
 						for (var i=0; i<this._floatingBubbles.length; i++) {
+							sound.play("pop");
 							this._floatingBubbles[i]._bubbleImg.removeFromSuperview();
 						}
 						this._floatingBubbles = [];

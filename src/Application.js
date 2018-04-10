@@ -8,10 +8,10 @@ import ui.StackView as StackView;
 //user imports
 import src.TitleScreen as TitleScreen;
 import src.GameScreen as GameScreen;
-import src.soundcontroller as soundcontroller;
+import src.SoundController as SoundController;
 
 /* Your application inherits from GC.Application, which is
- * exported and instantiated when the game is run.
+ * exported and instantiated when the game is run
  */
 exports = Class(GC.Application, function() {
 
@@ -40,7 +40,7 @@ exports = Class(GC.Application, function() {
 
 		rootView.push(titleScreen);
 
-		var sound = soundcontroller.getSound();
+		var sound = SoundController.getSound();
 
 		/* Listen for an event dispatched by the title screen when
 		 * the start button has been pressed. Hide the title screen,

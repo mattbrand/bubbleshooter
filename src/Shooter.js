@@ -1,7 +1,7 @@
 import ui.View;
 import ui.ImageView;
 import ui.resource.Image as Image;
-import src.soundcontroller as soundcontroller;
+import src.SoundController as SoundController;
 
 var SHOOTER_SIZE = 40;
 var START_X = 140;
