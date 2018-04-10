@@ -129,8 +129,8 @@ exports = Class(ui.View, function (supr) {
   };
 
   this.displayGameOver = function() {
-    this._currentPanel.setText("Game ");
-    this._nextPanel.setText("Over!");
+    this._nextPanel.setText("Game ");
+    this._currentPanel.setText("Over!");
     this._currentBubbleImg.style.opacity = 0;
     this._nextBubbleImg.style.opacity = 0;
   };

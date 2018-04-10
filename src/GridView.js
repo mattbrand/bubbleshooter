@@ -8,7 +8,7 @@ var BLANK_BUBBLE = -1;
 var NO_BUBBLE = -2;
 var GRID_ROWS = 13;
 var GRID_COLUMNS = 8;
-var START_ROWS = 5;
+var START_ROWS = 12;
 var BUBBLE_SIZE = 40;
 var DEBUG = false;
 
@@ -367,6 +367,18 @@ exports = Class(ui.View, function (supr) {
 		};
 	};
 });
+
+/* reset
+
+for (var i=0; i<GRID_COLUMNS; i++) {
+  for (var j=0; j<GRID_ROWS; j++) {
+    this._grid[i][j].removeFromSuperview();
+  }
+}
+
+for (var i=0; i<this._bubbles.length; i++)
+  this._bubbles[i].removeFromSuperview();
+*/
 
 // utilities
 function getRandomInt(min, max) {

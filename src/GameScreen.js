@@ -16,7 +16,6 @@ var BUBBLE_SIZE = 40;
 var DEBUG = false;
 
 var score = 0;
-var game_on = false;
 var currentType = -1;
 var nextType = -1;
 var gameState = 0; // 0 == aiming, 1 = shooting, 2 = finding matches, 3 = falling bubbles, 4 = shifting
@@ -40,6 +39,8 @@ exports = Class(ui.View, function (supr) {
 
 	// main view building function
 	this.build = function() {
+
+		console.log("this.build");
 
 		this._gridView = new GridView();
 		this.addSubview(this._gridView);
@@ -150,10 +151,7 @@ exports = Class(ui.View, function (supr) {
 });
 
 function startGameFlow() {
-	game_on = true;
 	this.setScoreText();
-
-	console.log("startGameFlow");
 
 	// update to handle gameplay
 	GC.app.engine.on('Tick', bind(this, function() {
@@ -291,31 +289,24 @@ function emitEndEvent() {
 
 /* reset game counters and assets */
 function resetGame() {
-	/*
-	console.log(this);
-
 	score = 0;
 	gameState = 0;
-	// remove old grid
-	console.log("resetGame");
-	for (var i=0; i<GRID_COLUMNS; i++) {
-		for (var j=0; j<GRID_ROWS; j++) {
-			this._grid[i][j].removeFromSuperview();
-		}
-	}
 
-	for (var i=0; i<this._bubbles.length; i++)
-		this._bubbles[i].removeFromSuperview();
+	this._gridView.removeFromSuperview();
 
 	if (this._shot != null) {
 		this._shot.removeFromSuperview();
 		this._shot = null;
 	}
-	*/
 
-	this._nextView.reset();
+	this._shooter.removeFromSuperview();
+	this._shooter = null;
 
-	// this.buildGrid();
+	this._nextView.removeFromSuperview();
+
+	this._scoreBoard.removeFromSuperview();
+
+	this.build();
 }
 
 // utilities
