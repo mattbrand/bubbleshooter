@@ -12,8 +12,11 @@ var BLANK_BUBBLE = -1;
 var NO_BUBBLE = -2;
 var CLUSTER_FALL_Y = 80;
 var CLUSTER_POINTS = 5;
+var SHOT_COUNT_TO_NEW_ROW = 5;
 var BUBBLE_SIZE = 40;
 var DEBUG = false;
+
+var spaceImgStr = "resources/images/space.png";
 
 var score = 0;
 var currentType = -1;
@@ -39,17 +42,27 @@ exports = Class(ui.View, function (supr) {
 
 	// main view building function
 	this.build = function() {
+		// set up listener for start game event
+		this.on("app:start", startGameFlow.bind(this));
 
-		console.log("this.build");
+		// set up reference to sound controller
+		sound = SoundController.getSound();
 
+		// add space bg
+		this._bg = new ui.ImageView({
+			superview: this,
+			x: 0,
+			y: 0,
+      image: spaceImgStr,
+			width: 320,
+			height: 570
+		});
+
+		// add the view that holds the grid positions and the bubbles within it
 		this._gridView = new GridView();
 		this.addSubview(this._gridView);
 
-		sound = SoundController.getSound();
-
-		// console.log(this);
-		this.on("app:start", startGameFlow.bind(this));
-
+		// add thew score view
 		this._scoreBoard = new ui.TextView({
 			superview: this,
 			x: 0,
@@ -62,9 +75,10 @@ exports = Class(ui.View, function (supr) {
 			horizontalAlign: 'center',
 			wrap: false,
 			color: '#FFFFFF',
-			backgroundColor: '#222222'
+			backgroundColor: '#000000'
 		});
 
+		// create the next view, which shows which bubbles come next
 		this._nextView = new NextView();
 		this.addSubview(this._nextView);
 		currentType = getRandomInt(0, 3);
@@ -252,7 +266,7 @@ function startGameFlow() {
 				break;
 			case 4:
 				// check if a new row is to be added to the grid
-				if (shotCount % 5 == 0) {
+				if (shotCount % SHOT_COUNT_TO_NEW_ROW == 0) {
 					this._gridView.shiftGrid();
 				}
 				if (DEBUG)
@@ -273,25 +287,26 @@ function startGameFlow() {
 	}));
 }
 
-/* begin ending the game, displays game over and emits end event */
+// begin ending the game, displays game over and emits end event
 function endGameFlow() {
-	console.log(GC.app.engine);
 	this.setScoreText();
 	this._nextView.displayGameOver();
 	setTimeout(emitEndEvent.bind(this), 2000);
 }
 
-/* tell the main app to switch back to the title screen */
+// tell the main app to switch back to the title screen
 function emitEndEvent() {
 	this.emit("gamescreen:end");
 	resetGame.call(this);
 }
 
-/* reset game counters and assets */
+// reset game counters and assets
 function resetGame() {
 	score = 0;
 	gameState = 0;
 
+	this._bg.removeFromSuperview();
+	
 	this._gridView.removeFromSuperview();
 
 	if (this._shot != null) {
@@ -299,11 +314,11 @@ function resetGame() {
 		this._shot = null;
 	}
 
+	this._aimView.removeFromSuperview();
+
 	this._shooter.removeFromSuperview();
 	this._shooter = null;
-
 	this._nextView.removeFromSuperview();
-
 	this._scoreBoard.removeFromSuperview();
 
 	this.build();

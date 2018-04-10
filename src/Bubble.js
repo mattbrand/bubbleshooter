@@ -4,11 +4,11 @@ import ui.resource.Image as Image;
 
 var BUBBLE_SIZE = 40;
 
-var bubbleImg = new Image({url: "resources/images/bubble.png"});
-var bubblePurpleImg = new Image({url: "resources/images/bubble_purple.png"});
-var bubbleYellowImg = new Image({url: "resources/images/bubble_yellow.png"});
-var bubbleRedImg = new Image({url: "resources/images/bubble_red.png"});
-var bubbleLightImg = new Image({url: "resources/images/bubble_light.png"});
+var bubbleImg = new Image({url: "resources/images/blue_gem.png"});
+var bubblePurpleImg = new Image({url: "resources/images/purple_gem.png"});
+var bubbleYellowImg = new Image({url: "resources/images/yellow_gem.png"});
+var bubbleRedImg = new Image({url: "resources/images/red_gem.png"});
+var bubbleLightImg = new Image({url: "resources/images/green_gem.png"});
 
 exports = Class(ui.View, function (supr) {
 	this.init = function (opts) {

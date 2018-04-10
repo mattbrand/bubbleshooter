@@ -9,11 +9,11 @@ var CURRENT_X = 265;
 var CURRENT_Y = 525;
 var NEXT_X = 105;
 var NEXT_Y = 525;
-var bubbleImgStr = "resources/images/bubble.png";
-var bubblePurpleImgStr = "resources/images/bubble_purple.png";
-var bubbleYellowImgStr = "resources/images/bubble_yellow.png";
-var bubbleRedImgStr = "resources/images/bubble_red.png";
-var bubbleLightImgStr = "resources/images/bubble_light.png";
+var bubbleImgStr = "resources/images/blue_gem.png";
+var bubblePurpleImgStr = "resources/images/purple_gem.png";
+var bubbleYellowImgStr = "resources/images/yellow_gem.png";
+var bubbleRedImgStr = "resources/images/red_gem.png";
+var bubbleLightImgStr = "resources/images/green_gem.png";
 
 exports = Class(ui.View, function (supr) {
 	this.init = function (opts) {
@@ -40,7 +40,7 @@ exports = Class(ui.View, function (supr) {
 			horizontalAlign: 'left',
 			wrap: false,
 			color: '#FFFFFF',
-			backgroundColor: '#222222'
+			backgroundColor: '#000000'
 		});
 
     this._currentPanel.setText("CURR");
@@ -57,7 +57,7 @@ exports = Class(ui.View, function (supr) {
 			horizontalAlign: 'left',
 			wrap: false,
 			color: '#FFFFFF',
-			backgroundColor: '#222222'
+			backgroundColor: '#000000'
 		});
 
     this._nextPanel.setText("NEXT");
