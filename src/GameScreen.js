@@ -13,6 +13,7 @@ var NO_BUBBLE = -2;
 var CLUSTER_FALL_Y = 80;
 var CLUSTER_POINTS = 5;
 var SHOT_COUNT_TO_NEW_ROW = 5;
+var MAX_BUBBLE_TYPE = 4;
 var BUBBLE_SIZE = 40;
 var DEBUG = false;
 
@@ -81,9 +82,9 @@ exports = Class(ui.View, function (supr) {
 		// create the next view, which shows which bubbles come next
 		this._nextView = new NextView();
 		this.addSubview(this._nextView);
-		currentType = getRandomInt(0, 3);
+		currentType = getRandomInt(0, MAX_BUBBLE_TYPE);
 		this._nextView.setCurrentBubble(currentType);
-		nextType = getRandomInt(0, 3);
+		nextType = getRandomInt(0, MAX_BUBBLE_TYPE);
 		this._nextView.setNextBubble(nextType);
 
 		this.style.width = 320;
@@ -141,13 +142,15 @@ exports = Class(ui.View, function (supr) {
 			this._shooter.setAngle(pt);
 		};
 
+		// fire a new shot
 		this.fireShot = function() {
+			sound.play("shoot");
 			this._shot = new Shot();
 			this._shotX = Math.cos(this._shooter._angle);
 			this._shotY = Math.sin(this._shooter._angle);
 			this._shot.launch(this._shotX, this._shotY, currentType, this._shot);
 			currentType = nextType;
-			nextType = getRandomInt(0, 3);
+			nextType = getRandomInt(0, MAX_BUBBLE_TYPE);
 			this._nextView.setCurrentBubble(currentType);
 			this._nextView.setNextBubble(nextType);
 			this.addSubview(this._shot);
@@ -180,6 +183,14 @@ function startGameFlow() {
 					}
 					else if (this._shot._shotImg.style.x < 0 && this._shotX > 0) {
 						this._shotX *= -1;
+					}
+
+					if (this._shot._shotImg.style.y < 0) {
+						var nextGameState = this._gridView.snapShotToGrid(this._shot);
+						this._shot.removeFromSuperview();
+						this._shot = null;
+						gameState = 2;
+						break;
 					}
 
 					// check for overlaps
@@ -300,13 +311,13 @@ function emitEndEvent() {
 	resetGame.call(this);
 }
 
-// reset game counters and assets
+// reset all game data and remove all views
 function resetGame() {
 	score = 0;
 	gameState = 0;
 
 	this._bg.removeFromSuperview();
-	
+
 	this._gridView.removeFromSuperview();
 
 	if (this._shot != null) {

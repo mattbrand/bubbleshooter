@@ -22,6 +22,10 @@ exports.getSound = function () {
         pops: {
           path: 'effect',
           background: false
+        },
+        shoot: {
+          path: 'effect',
+          background: false
         }
       }
     });

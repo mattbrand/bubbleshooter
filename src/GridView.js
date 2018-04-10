@@ -9,6 +9,7 @@ var NO_BUBBLE = -2;
 var GRID_ROWS = 13;
 var GRID_COLUMNS = 8;
 var START_ROWS = 5;
+var MAX_BUBBLE_TYPE = 4;
 var BUBBLE_SIZE = 40;
 var DEBUG = false;
 
@@ -40,7 +41,7 @@ exports = Class(ui.View, function (supr) {
 			var arrayRow = [];
 			for (var j=0; j<GRID_ROWS; j++) {
 				var gridPos = new GridPos();
-				var type = getRandomInt(0, 4);
+				var type = getRandomInt(0, MAX_BUBBLE_TYPE);
 				var useYOffset = false;
 				if (j % 2 == 1)
 					useYOffset = true;
@@ -90,6 +91,8 @@ exports = Class(ui.View, function (supr) {
 
 		this.inOddRow = function(row) {
 			if (row < GRID_ROWS) {
+        if (row < 0)
+          row = 0;
 				if (this._grid[GRID_COLUMNS - 1][row]._type == NO_BUBBLE)
 					return true;
 			}
@@ -317,7 +320,7 @@ exports = Class(ui.View, function (supr) {
 				fullRow = true;
 			for (var i=0; i<GRID_COLUMNS; i++) {
 				var gridPos = new GridPos();
-				var type = getRandomInt(0, 3);
+				var type = getRandomInt(0, MAX_BUBBLE_TYPE);
 				if (!fullRow && (i == GRID_COLUMNS - 1))
 					type = NO_BUBBLE;
 				gridPos.setTypeAndPosition(i, 0, type, !fullRow);
