@@ -535,7 +535,8 @@ function startGameFlow() {
 						for (var i=0; i<floatingClusters.length; i++) {
 							for (var j=0; j<floatingClusters[i].length; j++) {
 								floatingClusters[i][j]._type = -1;
-								this._floatingBubbles.push(floatingClusters[i][j]._bubble);
+								if (floatingClusters[i][j]._bubble != null)
+									this._floatingBubbles.push(floatingClusters[i][j]._bubble);
 								floatingClusters[i][j]._bubble = null;
 								// add to score
 								this.addToScore(1);
