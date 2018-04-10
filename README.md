@@ -1,16 +1,21 @@
-devkit-application-template
-===========================
+Project Name: bubbleshooter
+Project Description: Bubble Shooter game created with DevKit from Game Closure
+DevKit Location: https://github.com/gameclosure/devkit
 
-Initial file structure for Gameclosure Devkit applications.
+Dependencies: none
 
-Includes an empty folder structure that matches the devkit defaults
-and a minimal Application.js file with a "Hello, world!" text view.
+Screens:
+TitleScreen - the splash title, where the player taps to start
+GameScreen - the screen that holds the gameplay
 
+Main Systems:
+GridView - holds all the grid locations for where bubbles are instantiated. This View does all hit calculation for where the player's shot collides with the bubble grid
+Shooter - stores the player's shooting object, and rotates it
+ParticleView - handles particles for explosions
+SoundController - handles all audio
+NextView - displays the current and next bubbles for the player to shoot
 
-You can specify a different initial template for new devkit applications
-by adding the `--git-template` paramater to `devkit init` and passing in
-a path to a git repository.
-
-~~~
-devkit init newproject --git-template https://github.com/gameclosure/devkit-application-template
-~~~
+Subsystems:
+GridPos - a location on the grid
+Bubble - a bubble graphic for the grid and the player's shot
+Shot - the object that the player fires
